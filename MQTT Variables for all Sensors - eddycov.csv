@@ -1,0 +1,56 @@
+Measurement  ,Friendly name   ,Description ,Units ,"Averaged, point or other ",Update ,
+,,,,,interval ,
+TA_1_1_1 ,Air temperature ,"Air temperature: Average (TA_1_1_1), calculated from sonic temperature and H2O mixing ratio ",°C (degrees) ,Average ,30 minutes ,DRI UI
+T_SONIC ,sonic temperature average ,Average sonic temperature ,°C (degrees) ,Average ,30 minutes ,
+,,,,,,
+TA_SIGMA_1_1_1 ,Air temperature standard deviation ,"Standard deviation for the air temperature, calculated from sonic temperature and H2O mixing ratio ",°C (degrees) ,Std.Dev ,30 minutes ,DRI UI
+T_SONIC_SIGMA ,Sonic temperature standard deviation ,Standard deviation of sonic temperature ,°C (degrees) ,Std.Dev ,30 minutes ,
+,,,,,,
+RH_1_1_1 ,Relative humidity ,"Average RH (RH_1_1_1) calculated from Tc (TA_1_1_1), ambient pressure, and H2O mixing ratio ",% ,Average ,30 minutes ,DRI UI
+VPD ,Ambient water vapour pressure deficit ,Ambient water vapour pressure deficit ,hPa ,Point ,30 minutes ,
+,,,,,,
+PA ,Atmospheric pressure ,Atmospheric pressure averaged  ,kPa ,Average ,30 minutes ,DRI UI
+PA_SIGMA ,Atmospheric pressure std.dev ,Standard deviation of atmospheric pressure. ,kPa ,Std.Dev ,30 minutes ,
+,,,,,,
+WS ,Mean wind speed ,Mean wind speed ,m/s-1 ,Point ,30 minutes ,DRI UI
+WS_MAX ,Maximum wind speed ,Maximum wind speed ,m/s-1 ,Point ,30 minutes ,
+WD ,Wind direction ,Wind direction ,degrees ,Point ,30 minutes ,
+,,,,,,
+W_SIGMA ,Standard deviation of wind speed in vertical direction ,Standard deviation of wind speed in vertical direction after coordinate rotations ,m/s-1 ,Point ,30 minutes ,DRI UI
+U_SIGMA ,Standard deviation of wind speed in stream-wise wind direction ,Standard deviation of wind speed in stream-wise wind direction after coordinate rotations ,m/s-1 ,Point ,30 minutes ,
+V_SIGMA ,Standard deviation of wind speed in lateral direction ,Standard deviation of wind speed in lateral direction after coordinate rotations ,m/s-1 ,Point ,30 minutes ,
+,,,,,,
+FETCH_70 ,Upwind range within which sources/sinks contributes 40% to the flux ,Upwind range within which sources/sinks contributes 40% to the measured flux ,meters ,Point ,30 minutes ,DRI UI
+FETCH_80 ,Upwind range within which sources/sinks contributes 55% to the flux ,Upwind range within which sources/sinks contributes 55% to the measured flux ,meters ,Point ,30 minutes ,
+FETCH_90 ,Upwind range within which sources/sinks contributes 90% to the flux ,Upwind range within which sources/sinks contributes 90% to the measured flux ,meters ,Point ,30 minutes ,
+FETCH_MAX ,Upwind location of sources/sinks ,Upwind location of sources/sinks that contributes most to the measured flux ,meters ,Point ,30 minutes ,
+FETCH_FILTER ,Fetch filter ,"Fetch filter. The flux data is kept, while FETCH_FILTER is 1, and may be discarded by a user if 0. ",- ,Point ,30 minutes ,
+,,,,,,
+TIMESTAMP_START ,Timestamp start ,Starting time stamp in an output interval (30 minutes). In the format YYYYMMDDHHMM. ,Text ,Point ,30 minutes ,DRI UI
+TIMESTAMP_END ,Timestamp end ,Starting time stamp in an output interval (30 minutes). In the format YYYYMMDDHHMM. ,Text ,Point ,30 minutes ,
+,,,,,,
+CO2 ,Co2 fraction in wet air ,Co2 fraction in wet air: Average (Co2)  ,umol mol-1  ,Average ,30 minutes ,DRI UI
+FC ,Co2 flux ,Co2 flux (in umolCO2 m-2 s-1) after coordinate rotations and freq corrections ,umolCO2 m-2 s-1 ,Point ,30 minutes ,
+,,,,,,
+H2O ,H2O mole fraction in wet air ,H2O mole fraction in wet air: Average (H2O) ,g m-3 ,Average ,30 minutes ,DRI UI
+FH2O ,H2O flux ,H2O flux (in mmolH2O m-2 s-1) after coordinate rotations and freq corrections ,mmolH2O m-2 s-1 ,Point ,30 minutes ,
+,,,,,,
+CO2_SIGMA ,Standard deviation of Co2 fraction in wet air ,Standard deviation of Co2 mole fraction in wet air ,umol mol-1  ,Standard Dev ,30 minutes ,DRI UI
+H2O_SIGMA ,Standard deviation of H2O mole fraction in wet air ,Standard deviation of H2O mole fraction in wet air ,g m-3 ,Standard Dev ,30 minutes ,
+,,,,,,
+LE ,Latent heat flux ,Latent heat flux after coordinate rotations and freq corrections ,W m-2 ,Point ,30 minutes ,DRI UI
+H ,Sensible heat flux ,Sensible heat flux derived from sonic temperature flux with SND correction after coordinate rotations and freq corrections ,,Point ,30 minutes ,
+,,,,,,
+FC_SSITC_TEST ,,Results of the Steady State and Integral Turbulence Characteristics for FC according to TK2 manual ,,Point ,30 minutes ,DRI UI
+FH2O_SSITC_TEST ,,,,Point ,30 minutes ,
+LE_SSITC_TEST ,,Results of the Steady State and Integral Turbulence Characteristics for LE used for FH2O according to TK2 manual ,,Point ,30 minutes ,
+H_SSITC_TEST ,,Results of the Steady State and Integral Turbulence Characteristics for H according to TK2 manual ,,Point ,30 minutes ,
+TAU_SSITC_TEST ,,Results of the Steady State and Integral Turbulence Characteristics for TAU according to Foken et al (2004) ,,Point ,30 minutes ,
+,,,,,,
+TAU ,Momentum flux ,Momentum flux after coordinate rotations and freq corrections ,(kg m-3)(m/s)2 ,Point ,30 minutes ,DRI UI
+USTAR ,Friction velocity ,Friction velocity after coordinate rotations and freq corrections ,m/s-1 ,Point ,30 minutes ,
+,,,,,,
+,,,,,,
+ZL ,Atmospheric boundary-layer stability ,Atmospheric boundary-layer stability ,- ,Point ,30 minutes ,DRI UI
+PBLH_F ,Planetary boundary layer height ,Planetary boundary layer height ,meters ,Point ,30 minutes ,
+MO_LENGTH ,Monin-Obukhov length ,The Monin-Obukhov length. ,meters ,Point ,30 minutes ,

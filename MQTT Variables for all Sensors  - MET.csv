@@ -1,0 +1,76 @@
+,Measurement  ,Friendly name ,Description  ,Units ,Averaged or point ,Update 
+Sensor,,,,,,interval 
+CR1000xe Datalogger,BattV ,Voltage in ,The voltage as seen by the datalogger at the power input point. ,V ,Sample ,1 minute 
+,,,,,,
+DPS8100 Barometer,Pressure_Avg ,Pressure average ,The averaged pressure reading. ,hPa ,Average ,30 minutes 
+,,,,,,
+HMP155 Air temperature and relative humidity probe ,AirTemp_C / HMP_AirTemp ,Air temp ,The temperature of the air from the HMP 155 sensor. ,Celsius ,Point ,1 minute 
+HMP155 Air temperature and relative humidity probe ,RH / HMP_RH ,Relative Humidity ,The relative humidity from the HMP 155 sensor. ,% ,Point ,1 minute 
+HMP155 Air temperature and relative humidity probe ,DewPoint_C / HMP_DewPoint ,Dew point ,"Derived from Air temp, Air pressure and relative humidity. ",Celsius ,Point ,1 minute 
+,,,,,,
+TS100 Fan aspirated temperature screen,TS100SS_Fan_RPM ,Aspirated screen fan speed ,The RPM of the fan in the aspirated screen housing the temperature and humidity sensor. ,RPM ,Point ,1 minute 
+,,,,,,
+CS310 PAR Sensor,PPFD_IN_Avg ,Photosynthetically active radiation ,"The averaged measurement from the CS310 PAR sensor, measuring photosynthetically active radiation. ",µmol m-2 s-1 ,Average ,1 minute 
+,,,,,,
+NR01 Component radiometer,albedo_Avg ,Average albedo ,"The calculated albedo, derived from the NR01 sensors. ",% ,Average ,1 minute 
+,,,,,,
+,,,If ((R_SW_in > 0) AND (R_SW_in >= R_SW_out)) Then ,,,
+,,,          albedo = 100*(R_SW_out/R_SW_in)                    'in % (raw mV ratio - apply corrections in post-processing) ,,,
+,,,Else ,,,
+,,,          albedo = 0 ,,,
+,,,EndIf ,,,
+NR01 Component radiometer,R_SW_in_Avg ,Average short-wave in ,"The average short-wave radiation in the radiometer sensor needs correcting from the raw mV values, using the reported calibration value. ",MW to become  W/m2 ,Average ,1 minute 
+,,,,,,
+,,,SW_IN_SNSTVT As Float     = 15.35    'Unique: NR01 sensitivity of upward facing pyranometer as reported on sensor calibration sheet [uV/(W m-2)]. ,,,
+,,,SW_IN_CAL  = 1000/SW_IN_SNSTVT 'Multiplier for NR01 or CNR4 shortwave downwelling (incoming) radiation (1000/sensitivity). ,,,
+,,,R_SW_in    = R_SW_in  *SW_IN_CAL ,,,
+NR01 Component radiometer,R_SW_out_Avg ,Average short-wave out ,"The average short-wave radiation reflected out, the radiometer sensor needs to be corrected from the raw mV values, using the reported calibration value. ",W/m2 ,Average ,1 minute 
+,,,,,,
+,,,SWOUT_SNSTVT As Float     = 15.41      'Unique: NR01 sensitivity of downward facing pyranometer as reported on sensor calibration sheet [uV/(W m-2)]. ,,,
+,,,SW_OUT_CAL = 1000/SWOUT_SNSTVT      'Multiplier for NR01 or CNR4 shortwave upwelling (outgoing) radiation (1000/sensitivity). ,,,
+,,,R_SW_out = R_SW_out *SW_OUT_CAL ,,,
+NR01 Component radiometer,R_LW_in_Avg ,Average long-wave radiation in ,The average long-wave radiation from the radiometer sensor needs to be corrected from the raw mV values using the reported calibration value. ,W/m2 ,Average ,1 minute 
+,,,,,,
+,,,LW_IN_SNSTVT As Float     = 8.50       'Unique: NR01 sensitivity of upward facing pyrgeometer as reported on sensor calibration sheet [uV/(W m-2)]. ,,,
+,,,LW_IN_CAL  = 1000/LW_IN_SNSTVT           'Multiplier For NR01 OR CNR4 longwave downwelling (incoming) radiation (1000/sensitivity). ,,,
+,,,R_LW_in    = R_LW_in  *LW_IN_CAL ,,,
+NR01 Component radiometer,R_LW_out_Avg ,Average longwave radiation out ,"The radiometer sensor needs correcting from the raw mV values, using the reported calibration value. ",W/m2 ,Average ,1 minute 
+,,,,,,
+,,,The following calculation was used by default (the sensitivity will require updating). ,,,
+,,,LWOUT_SNSTVT As Float     = 7.09       'Unique: NR01 sensitivity of downward facing pyrgeometer as reported on sensor calibration sheet [uV/(W m-2)]. ,,,
+,,,LW_OUT_CAL = 1000/LWOUT_SNSTVT      'Multiplier for NR01 or CNR4 longwave upwelling (outgoing) radiation (1000/sensitivity). ,,,
+,,,R_LW_out = R_LW_out  *LW_OUT_CAL ,,,
+NR01 Component radiometer,T_nr_Avg ,,The net radiation calculated using “NETRAD = R_SW_in - R_SW_out + R_LW_in - R_LW_out”. ,W/m2 ,Average ,1 minute 
+,,,,,,
+RainE Precipitation Gauge -  Standard height,RainE_Standard_Int_1m ,Precipitation intensity per minute ,Precipitation intensity per minute ,mm/minute ,Sample ,1 minute 
+RainE Precipitation Gauge -  Standard height,RainE_Standard_Int_1m_hr ,Precipitation intensity per hour ,Precipitation intensity per minute. Value multiplied by 60 for a representative hourly value ,mm/hour ,Sample ,1 minute 
+RainE Precipitation Gauge -  Standard height,RainE_Standard_Precip_lr ,Precipitation since last retrieval ,The precipitation measured since the last measurement was retrieved (should be at a 1 minute interval). ,mm ,Sample ,1 minute 
+RainE Precipitation Gauge -  Standard height,RainE_Standard_Precip_Tot ,Total precipitation ,The precipitation measured since the RainE has been powered.  ,mm ,Sample ,1 minute 
+,,,,,,
+RainE Precipitation Gauge -  Located in rain gauge pit,RainE_Pit_Int_1m ,Precipitation intensity per minute ,Precipitation intensity per minute ,mm/minute ,Sample ,1 minute 
+RainE Precipitation Gauge -  Located in rain gauge pit,RainE_Pit_Int_1m_hr ,Precipitation intensity per hour ,Precipitation intensity per minute. Value multiplied by 60 for a representative hourly value ,mm/hour ,Sample ,1 minute 
+RainE Precipitation Gauge -  Located in rain gauge pit,RainE_Pit_Precip_lr ,Precipitation since last retrieval ,The precipitation measured since the last measurement was retrieved (should be at a 1 minute interval). ,mm ,Sample ,1 minute 
+RainE Precipitation Gauge -  Located in rain gauge pit,RainE_Pit_Precip_Tot ,Total precipitation ,The precipitation measured since the RainE has been powered.  ,mm ,Sample ,1 minute 
+,,,,,,
+,,,,,,
+Apogee SI-411 Infrared Radiometer,TargetTemp_C_Avg ,SI-411 target temperature average. ,The average temperature at the target pointed at by the SI-411. ,°C ,Average ,"15 second sampling, 15 minute reported average "
+Apogee SI-411 Infrared Radiometer,BodyTemp_C_Avg ,SI-411 body temperature average. ,The average body temperature for the SI-411. ,°C ,Average ,"15 second sampling, 15 minute reported average "
+Apogee SI-411 Infrared Radiometer,TargetTemp_C_Max ,SI-411 body temperature maximum. ,The maximum target temperature for the SI-411. ,°C ,Max ,"15 second sampling, 15 minute report "
+Apogee SI-411 Infrared Radiometer,BodyTemp_C_Max ,SI-411 body temperature maximum. ,The maximum body temperature for the SI-411. ,°C ,Max ,"15 second sampling, 15 minute report "
+Apogee SI-411 Infrared Radiometer,TargetTemp_C_Min ,SI-411 body temperature minimum. ,The minimum target temperature for the SI-411. ,°C ,Min ,"15 second sampling, 15 minute report "
+Apogee SI-411 Infrared Radiometer,BodyTemp_C_Min ,SI-411 body temperature minimum. ,The minimum body temperature for the SI-411. ,°C ,Min ,"15 second sampling, 15 minute report "
+,,,,,,
+Upwards pointing normalised difference vegetation (NDVI) sensor (S2-411),SW_irr_Avg ,NDVI Short-wave irradiation average. ,"Upwards pointing normalised difference vegetation (NDVI) sensor (S2-411) measuring the short-wave (650nm, 10nm full-width half maximum) irradiance. ",W/m2 ,Average ,15 minutes 
+Upwards pointing normalised difference vegetation (NDVI) sensor (S2-411),LW_irr_Avg ,NDVI Long-wave irradiation average. ,"Upwards pointing normalised difference vegetation (NDVI) sensor (S2-411) measuring the long-wave (810nm, 10nm full-width half maximum) irradiance. ",W/m2 ,Average ,15 minutes 
+Downwards pointing normalised difference vegetation (NDVI) sensor (S2-412) ,SW_rad_Avg ,NDVI Short-wave radiation average. ,"The downwards pointing normalised difference vegetation (NDVI) sensor (S2-412) measuring the reflected short-wave (650nm, 10nm full-width half maximum)  radiance. ",W/m2 ,Average ,15 minutes 
+Downwards pointing normalised difference vegetation (NDVI) sensor (S2-412) ,LW_rad_Avg ,NDVI Long-wave radiation average. ,"The downwards pointing normalised difference vegetation (NDVI) sensor (S2-412) measuring the reflected long-wave (810nm, 10nm full-width half maximum) radiance. ",W/m2 ,Average ,15 minutes 
+Upwards pointing normalised difference vegetation (NDVI) sensor (S2-411),S2411_angle_offset ,S2-411 angle. ,The angle of the upwards pointing radiation sensor (S2-411). Can be used to determine if the sensor has been moved. ,° ,Sample ,15 minutes 
+Downwards pointing normalised difference vegetation (NDVI) sensor (S2-412) ,S2412_angle_offset ,S2-412 angle. ,The angle of the downwards pointing radiation sensor (S2-412). Can be used to determine if the sensor has been moved. ,° ,Sample ,15 minutes 
+Upwards and Downwards pointing normalised difference vegetation (NDVI) sensors (S2-411 and S2-412) ,NDVI_Avg ,Average NDVI ,Calculated normalised difference vegetation (NDVI) from the 2 sensors. ,W/m2 ,Average ,15 minutes 
+,,,,,,
+,,,Calculation  ,,,
+,,,NDVI = ((LW_rad/LW_irr)-(SW_rad/SW_irr))/((LW_rad/LW_irr)+(SW_rad/SW_irr)) ,,,
+,,,,,,
+,,,,,,
+Windsonic 2D Anemometer,Windspeed,Windspeed,,meters/second,point,1 minute
+Windsonic 2D Anemometer,WindDir,Wind direction,,degrees,point,1 minute

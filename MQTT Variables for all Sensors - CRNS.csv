@@ -1,0 +1,33 @@
+,Measurement  ,Friendly name ,Description  ,Units ,Averaged or point ,Update 
+Sensor,,,,,,interval 
+Finapp CRNS,FA_cnt ,Finapp Status Count ,Status count. ,Count ,Point ,Hourly 
+Finapp CRNS,FA_battV ,Finapp Battery Voltage ,Incoming voltage level. ,Voltage (V) ,Point ,Hourly 
+Finapp CRNS,FA_pressure ,Finapp Pressure ,The atmospheric pressure measured by the instrument. ,hPa ,Point ,Hourly 
+Finapp CRNS,FA_paneltemp ,Finapp Panel Temperature ,The temperature measured on the instrument PCB. ,°C (degrees) ,Point ,Hourly 
+Finapp CRNS,FA_meas_cnt ,Finapp Measurement Count ,The measurement count at the above ground CRNS tube. ,Count ,Point ,Hourly 
+Finapp CRNS,FA_HV ,Finapp High Voltage ,The highest measured voltage level at the above ground CRNS tube. ,Millivolts (mV) ,Point ,Hourly 
+Finapp CRNS,FA_acq_time ,Finapp Acquisition Time ,The time to acquire the data at the above ground CRNS tube. ,Milliseconds (ms) ,Point ,Hourly 
+Finapp CRNS,FA_neutrons ,Finapp Neutrons ,The neutron count from the above ground CRNS tube. ,count ,Point ,Hourly 
+Finapp CRNS,FA_muons ,Finapp Muons ,The muon count from the above ground CRNS tube. ,count ,Point ,Hourly 
+Finapp CRNS,FA_ug_meas_cnt ,Finapp Underground Measurement Count ,The measurement count at the below ground CRNS tube. ,count ,Point ,Hourly 
+Finapp CRNS,FA_ug_HV ,Finapp Underground High Voltage ,The highest measured voltage level at the below ground CRNS tube. ,Millivolts (mV) ,Point ,Hourly 
+Finapp CRNS,FA_ug_acq_time ,Finapp Underground Acquisition Time ,The time to acquire the data at the below ground CRNS tube. ,Milliseconds (ms) ,Point ,Hourly 
+Finapp CRNS,FA_ug_neutrons ,Finapp Underground Neutrons ,The neutron count from the below ground CRNS tube. ,count ,Point ,Hourly 
+Finapp CRNS,FA_ug_muons ,Finapp Underground Muons ,The moun count from the below ground CRNS tube. ,count ,Point ,Hourly 
+,,,,,,
+Finapp CRNS,FA_data_cnt ,Finapp Data Count ,The calculated data count. ,count ,Point ,Hourly 
+Finapp CRNS,FA_soilmoisture ,Finapp Soil Moisture ,The calculated soil moisture. ,% ,Point ,Hourly 
+Finapp CRNS,FA_SWE_areal ,Finapp Snow Water Equivalent Areal ,INSERT THIS ,count ,Point ,Hourly 
+Finapp CRNS,FA_SWE_local ,Finapp Snow Water Equivalent Local ,The calculated snow-water equivalent. ,% ,Point ,Hourly 
+,,,,,,
+,,,,,,
+Styx Neutronica CNRS,Styx_Neutron_Count ,Neutron count from the Styx CRNS ,The number of neutrons recorded in the period. ,Count ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_Count_Period ,The duration for the count period for the Styx CRNS ,The duration (in seconds) of the count period. ,seconds ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_Temp_C ,Internal temp for the Styx CRNS ,internal temperature of the sensor. ,°C (degrees) ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_RH ,Internal humidity (RH) for the Styx CRNS ,internal relative humidity of the sensor. ,% ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_HV_Voltage ,Operating voltage for the Styx CRNS ,"The operating voltage. This is typically high voltage, and should be around 770V. ",Volts ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_HV_Current ,Operating current for the Styx CRNS ,The current draw ,uA ,Point ,30 minutes 
+Styx Neutronica CNRS,Styx_Pulse_0_15,Pulse height histogram for pulse size  0-15,Pulse height histogram for pulse size  0-15,text,text,30 minutes 
+Styx Neutronica CNRS,Styx_Pulse_16_31,Pulse height histogram for pulse size  16-31,Pulse height histogram for pulse size  16-31,text,text,30 minutes 
+Styx Neutronica CNRS,Styx_Pulse_32_47,Pulse height histogram for pulse size  32-47,Pulse height histogram for pulse size  32-47,text,text,30 minutes 
+Styx Neutronica CNRS,Styx_Pulse_48_63,Pulse height histogram for pulse size  48-63,Pulse height histogram for pulse size  48-63,text,text,30 minutes 

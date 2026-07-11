@@ -1,0 +1,98 @@
+,Measurement  ,Friendly name ,Description  ,Units ,Averaged or point ,Update 
+Sensor,,,,,,interval 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_5cm_avg_VWC ,VWC at 5 cm from SoilVUE ,The averaged volumetric water content at 5 cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_5cm_avg_Ka ,Apparent permittivity at 5 cm from SoilVUE ,The averaged apparent permittivity averaged at 5 cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_5cm_avg_T ,Temperature at 5 cm from SoilVUE ,The averaged temperature at 5cm depth. ,°C ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_5cm_avg_BulkEC ,Bulk electrical conductivity at 5 cm ,The averaged bulk electrical conductivity at 5 cm depth. ,dS/m ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_10cm_avg_VWC ,VWC at 10 cm from SoilVUE ,The averaged volumetric water content at 10 cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_10cm_avg_Ka ,Apparent permittivity at 5cm from SoilVUE ,The averaged apparent permittivity averaged at 5cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_10cm_avg_T ,Temperature at 5 cm from SoilVUE ,The averaged temperature at 5cm depth. ,,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_10cm_avg_BulkEC ,Bulk electrical conductivity at 10 cm ,The averaged bulk electrical conductivity at 5cm depth. ,dS/m ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_20cm_avg_VWC ,VWC at 20 cm from SoilVUE ,The averaged volumetric water content at 20cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_20cm_avg_Ka ,Apparent permittivity at 20 cm from SoilVUE ,The averaged apparent permittivity averaged at 20 cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_20cm_avg_T ,Temperature at 20 cm from SoilVUE ,The averaged temperature at 20 cm depth. ,°C ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_20cm_avg_BulkEC ,Bulk electrical conductivity at 20 cm ,The averaged bulk electrical conductivity at 20 cm depth. ,dS/m ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_30cm_avg_VWC ,VWC at 30 cm from SoilVUE ,The averaged volumetric water content at 30cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_30cm_avg_Ka ,Apparent permittivity at 30 cm from SoilVUE ,The averaged apparent permittivity averaged at 30 cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_30cm_avg_T ,Temperature at 30 cm from SoilVUE ,The averaged temperature at 30 cm depth. ,°C ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_30cm_avg_BulkEC ,Bulk electrical conductivity at 30 cm ,The averaged bulk electrical conductivity at 30 cm depth. ,dS/m ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_40cm_avg_VWC ,VWC at 40 cm from SoilVUE ,The averaged volumetric water content at 40cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_40cm_avg_Ka ,Apparent permittivity at 40 cm from SoilVUE ,The averaged apparent permittivity averaged at 40 cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_40cm_avg_T ,Temperature at 40 cm from SoilVUE ,The averaged temperature at 40 cm depth. ,°C ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_40cm_avg_BulkEC ,Bulk electrical conductivity at 40 cm ,The averaged bulk electrical conductivity at 40 cm depth. ,dS/m ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_50cm_avg_VWC ,VWC at 50 cm from SoilVUE ,The averaged volumetric water content at 50cm depth. ,m3/m3 ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_50cm_avg_Ka ,Apparent permittivity at 50 cm from SoilVUE ,The averaged apparent permittivity averaged at 50 cm depth. ,- ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_50cm_avg_T ,Temperature at 50 cm from SoilVUE ,The averaged temperature at 50 cm depth. ,°C ,Average ,15 minutes 
+SoilVUE Soil moisture and temperature profile probe,SoilVUE_1_50cm_avg_BulkEC ,Bulk electrical conductivity at 50 cm ,The averaged bulk electrical conductivity at 50 cm depth. ,dS/m ,Average ,15 minutes 
+,,,,,,
+Terros22 Soil water potential probe,TEROS22_1_avg_MP ,Average matric potential for sensor 1 ,An averaged matric potential reading for sensor at 5cm depth. ,kPa ,Average ,15 minute 
+Terros22 Soil water potential probe,TEROS22_1_avg_Temp ,Average temperature for sensor 1 ,An averaged temperature from the matric potential sensor reading for sensor at 5cm depth. ,°C ,Average ,15 minute 
+,… ,,,,,
+Terros22 Soil water potential probe,TEROS22_17_avg_MP ,Average matric potential for sensor 17 ,An averaged matric potential reading for sensor at 6 m depth. ,kPa ,Average ,15 minute 
+Terros22 Soil water potential probe,TEROS22_17_avg_Temp ,Average temperature for sensor 17 ,An averaged temperature from the matric potential sensor reading for sensor at 6 m depth. ,°C ,Average ,15 minute 
+,Second sensor array ,,... ,,,
+,,,,,,
+Acclima TDR Soil Sensor,Acclima_1_avg_VWC ,Average volumetric water content for sensor at 5 cm ,Average volumetric water content for sensor 1 (5 cm depth). ,m3/m3 ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_1_avg_EC ,Average electrical conductivity for sensor at 5 cm ,Average bulk electrical conductivity for sensor 1 (5 cm depth). ,dS/m ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_1_avg_T ,Average temperature for sensor at 5 cm ,Soil temperature at 5cm depth. ,°C ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_1_avg_P ,Relative permittivity at 5cm depth. ,The relative permittivity measured at 5 cm depth. ,- ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_1_avg_PEC ,Pore water electrical conductivity ,The pore water electrical conductivity electrical conductivity measured at 5 cm depth. ,uS/cm ,Average ,15 minute 
+,… ,… ,Sensors depths follow the standard array depths mentioned in section 4. ,… ,… ,
+Acclima TDR Soil Sensor,Acclima_17_avg_VWC ,Average volumetric water content for sensor at 6 m ,Average volumetric water content at a 6 m depth ,m3/m3 ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_17_avg_EC ,Average electrical conductivity for sensor at 6 m ,Average bulk electrical conductivity for sensor 1 (5 cm) ,dS/m ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_17_avg_T ,Average temperature for sensor 6 m ,Soil temperature at 6 m depth. ,°C ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_17_avg_P ,Relative permittivity at 6 m depth. ,The relative permittivity at 6 m depth. ,μs ,Average ,15 minute 
+Acclima TDR Soil Sensor,Acclima_17_avg_PEC ,Bulk electrical conductivity at 6 m depth. ,The pore water electrical conductivity measured at 6 m depth. ,uS/cm ,Average ,15 minute 
+,…Second array… ,,,,,
+,,,,,,
+,,,,,,
+HFP01SC Self-calibrating soil heat flux sensor 1,G_PLATE_1_1_1 ,Heatflux plate 1 ,"Heatflux plate 1 measuring the heat flux, located under the NR01 sensor. ",Millivolts / W m-2 ,Sample ,15 minutes 
+,,,,,,
+,,,"The heatflux plate, values are transmitted raw, along with the calibration value, and need to be  converted to provide real-world values. ",,,
+,,,,,,
+,,,Const HFP_SNSTVT_1 As Float     = 62.0       'Unique: Sensitivity of HFP01SC #1 as reported on sensor product certificate [uV/(W m-2)]. ,,,
+,,,Const HFP_OHM_1   As Float    = 95         'Unique: Heater resistance of HFP01SC #1 as reported on sensor product certificate (ohms). ,,,
+,,,,,,
+,,,INCLUDE REST OF CALCULATION -  ,,,
+HFP01SC Self-calibrating soil heat flux sensor 2,G_PLATE_1_1_2 ,Heatflux plate 2 ,"Heatflux plate 2, located under the infrared radiometer sensor. ",Millivolts / W m-2 ,Sample ,15 minutes 
+,,,,,,
+,,,"The heatflux plate, values are transmitted raw, along with the calibration value, and need to be  converted to provide real-world values. ",,,
+,,,,,,
+,,,Const HFP_SNSTVT_2 As Float   = 62.0       'Unique: Sensitivity of HFP01SC #2 as reported on sensor product certificate [uV/(W m-2)]. ,,,
+,,,Const HFP_OHM_2  As Float     = 95         'Unique: Heater resistance of HFP01SC #2 as reported on sensor product certificate (ohms).   ,,,
+,,,,,,
+HFP01SC Self-calibrating soil heat flux sensor 1,shfp_cal_sensitivity_1_1_1 ,Heatflux plate 1 calibration value ,The heatflux plate calibration value. ,- ,Sample ,Daily 
+HFP01SC Self-calibrating soil heat flux sensor 2,shfp_cal_sensitivity_1_1_2 ,Heatflux plate 2 calibration value ,The heatflux plate calibration value. ,- ,Sample ,Daily 
+HFP01SC Self-calibrating soil heat flux sensor 1,shfp_cal_fail_1_1_1 ,Heatflux plate 1 calibration failure flag ,A flag indicating if the previous calibration failed. ,Boolean ,Sample ,Daily 
+HFP01SC Self-calibrating soil heat flux sensor 2,shfp_cal_fail_1_1_2 ,Heatflux plate 2 calibration failure flag ,A flag indicating if the previous calibration failed. ,Boolean ,Sample ,Daily 
+,,,,,,
+CS655 Soil Sensor,CS655_0_VWC,Soil sensor 0 (5cm) volumetric water content,Soil sensor 0 (5cm) volumetric water content,m^3/m^3,sample,15 minutes
+CS655 Soil Sensor,CS655_0_EC,Soil sensor 0 (5cm) electrical conductivity,Soil sensor 0 (5cm) electrical conductivity,dS/m,sample,15 minutes
+CS655 Soil Sensor,CS655_0_T,Soil sensor 0 (5cm) temperature,Soil sensor 0 (5cm) temperature,Deg C,sample,15 minutes
+CS655 Soil Sensor,CS655_0_P,Soil sensor 0 (5cm) period,Soil sensor 0 (5cm) period,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_0_PA,Soil sensor 0 (5cm) period average,Soil sensor 0 (5cm) period average,nano seconds,sample,15 minutes
+CS655 Soil Sensor,CS655_0_VR,Soil sensor 0 (5cm) voltage ratio,Soil sensor 0 (5cm) voltage ratio,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_1_VWC,Soil sensor 1 (10cm) volumetric water content,Soil sensor 1 (10cm) volumetric water content,m^3/m^3,sample,15 minutes
+CS655 Soil Sensor,CS655_1_EC,Soil sensor 1 (10cm) electrical conductivity,Soil sensor 1 (10cm) electrical conductivity,dS/m,sample,15 minutes
+CS655 Soil Sensor,CS655_1_T,Soil sensor 1 (10cm) temperature,Soil sensor 1 (10cm) temperature,Deg C,sample,15 minutes
+CS655 Soil Sensor,CS655_1_P,Soil sensor 1 (10cm) period,Soil sensor 1 (10cm) period,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_1_PA,Soil sensor 1 (10cm) period average,Soil sensor 1 (10cm) period average,nano seconds,sample,15 minutes
+CS655 Soil Sensor,CS655_1_VR,Soil sensor 1 (10cm) voltage ratio,Soil sensor 1 (10cm) voltage ratio,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_2_VWC,Soil sensor 2 (15cm) volumetric water content,Soil sensor 2 (15cm) volumetric water content,m^3/m^3,sample,15 minutes
+CS655 Soil Sensor,CS655_2_EC,Soil sensor 2 (15cm) electrical conductivity,Soil sensor 2 (15cm) electrical conductivity,dS/m,sample,15 minutes
+CS655 Soil Sensor,CS655_2_T,Soil sensor 2 (15cm) temperature,Soil sensor 2 (15cm) temperature,Deg C,sample,15 minutes
+CS655 Soil Sensor,CS655_2_P,Soil sensor 2 (15cm) period,Soil sensor 2 (15cm) period,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_2_PA,Soil sensor 2 (15cm) period average,Soil sensor 2 (15cm) period average,nano seconds,sample,15 minutes
+CS655 Soil Sensor,CS655_2_VR,Soil sensor 2 (15cm) voltage ratio,Soil sensor 2 (15cm) voltage ratio,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_3_VWC,Soil sensor 3 (25cm) volumetric water content,Soil sensor 3 (25cm) volumetric water content,m^3/m^3,sample,15 minutes
+CS655 Soil Sensor,CS655_3_EC,Soil sensor 3 (25cm) electrical conductivity,Soil sensor 3 (25cm) electrical conductivity,dS/m,sample,15 minutes
+CS655 Soil Sensor,CS655_3_T,Soil sensor 3 (25cm) temperature,Soil sensor 3 (25cm) temperature,Deg C,sample,15 minutes
+CS655 Soil Sensor,CS655_3_P,Soil sensor 3 (25cm) period,Soil sensor 3 (25cm) period,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_3_PA,Soil sensor 3 (25cm) period average,Soil sensor 3 (25cm) period average,nano seconds,sample,15 minutes
+CS655 Soil Sensor,CS655_3_VR,Soil sensor 3 (25cm) voltage ratio,Soil sensor 3 (25cm) voltage ratio,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_4_VWC,Soil sensor 4 (50cm) volumetric water content,Soil sensor 4 (50cm) volumetric water content,m^3/m^3,sample,15 minutes
+CS655 Soil Sensor,CS655_4_EC,Soil sensor 4 (50cm) electrical conductivity,Soil sensor 4 (50cm) electrical conductivity,dS/m,sample,15 minutes
+CS655 Soil Sensor,CS655_4_T,Soil sensor 4 (50cm) temperature,Soil sensor 4 (50cm) temperature,Deg C,sample,15 minutes
+CS655 Soil Sensor,CS655_4_P,Soil sensor 4 (50cm) period,Soil sensor 4 (50cm) period,unitless,sample,15 minutes
+CS655 Soil Sensor,CS655_4_PA,Soil sensor 4 (50cm) period average,Soil sensor 4 (50cm) period average,nano seconds,sample,15 minutes
+CS655 Soil Sensor,CS655_4_VR,Soil sensor 4 (50cm) voltage ratio,Soil sensor 4 (50cm) voltage ratio,unitless,sample,15 minutes
