@@ -10,7 +10,8 @@ from models.energy_balance import (
     calculate_energy_balance_residual,
     check_solar_radiation,
     estimate_sensible_heat_from_temp,
-    calculate_expected_clear_sky_solar
+    calculate_expected_clear_sky_solar,
+    calculate_aerodynamic_resistance
 )
 
 def test_calculate_energy_balance_residual():
@@ -44,6 +45,23 @@ def test_estimate_sensible_heat_from_temp():
     # h = 1.225 * 1004 * (5) / 50 = 122.99
     expected = (1.225 * 1004.0 * 5.0) / 50.0
     np.testing.assert_allclose(h_est.values, [expected])
+
+def test_calculate_aerodynamic_resistance():
+    # Test normal wind speed
+    wind_speed = pd.Series([2.0, 5.0, 0.0]) # m/s
+    ra = calculate_aerodynamic_resistance(wind_speed, z_m=3.0, z_0m=0.03, z_0h=0.003)
+    
+    # Manual calc for wind_speed = 2.0:
+    # ln(3.0/0.03) * ln(3.0/0.003) / (0.16 * 2.0) 
+    # = 4.605 * 6.907 / 0.32 = 31.806 / 0.32 = 99.39
+    
+    assert len(ra) == 3
+    np.testing.assert_allclose(ra[0], 99.39, rtol=1e-2)
+    np.testing.assert_allclose(ra[1], 39.75, rtol=1e-2)
+    
+    # Wind speed 0.0 is capped to 0.1
+    # 31.806 / (0.16 * 0.1) = 31.806 / 0.016 = 1987.8
+    np.testing.assert_allclose(ra[2], 1987.8, rtol=1e-2)
 
 def test_calculate_expected_clear_sky_solar():
     # Test during noon at the equator
