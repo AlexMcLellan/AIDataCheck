@@ -35,15 +35,35 @@ def test_integrate_soil_moisture_profile():
     np.testing.assert_allclose(storage.values, [80.0])
 
 def test_flag_rain_soil_moisture_mismatch():
-    precip = pd.Series([0.0, 10.0, 0.0])
-    delta_s = pd.Series([1.0, 5.0, 8.0])
+    idx = pd.date_range('2023-01-01', periods=3, freq='h')
+    precip = pd.Series([0.0, 10.0, 0.0], index=idx)
+    delta_s = pd.Series([1.0, 1.0, 10.0], index=idx)
     
-    # threshold = 5.0
-    flags = flag_rain_soil_moisture_mismatch(precip, delta_s, threshold=5.0)
+    # Test 1: Spikes in soil moisture without rain
+    # depth_m = 0.5, k_sat_cm_h = 5.0 -> lag is 10 hours.
+    # For this test, let's use depth_m = 0.05 (5cm) so lag is 1 hour.
+    flags = flag_rain_soil_moisture_mismatch(
+        precip_interval=precip, 
+        delta_s=delta_s, 
+        depth_m=0.05, 
+        k_sat_cm_h=5.0,
+        threshold_ds=5.0,
+        rain_window='2h'
+    )
     
     # Index 0: dS=1 < 5, False
-    # Index 1: dS=5, P=10, False (no mismatch)
-    # Index 2: dS=8 > 5, P=0 < 1, True (mismatch!)
-    assert not flags[0]
-    assert not flags[1]
-    assert flags[2]
+    # Index 1: dS=1 < 5, False
+    # Index 2: dS=10 > 5. BUT lagged rain (10.0 shifted by 1 hour) arrived exactly at index 2.
+    # recent_lagged_rain will be 10.0 > 1.0, so mismatch_no_rain = False.
+    assert not flags.iloc[0]
+    assert not flags.iloc[1]
+    assert not flags.iloc[2]
+
+    # Test 2: Spike with NO rain
+    precip_no_rain = pd.Series([0.0, 0.0, 0.0], index=idx)
+    flags_no_rain = flag_rain_soil_moisture_mismatch(
+        precip_no_rain, delta_s, depth_m=0.05, k_sat_cm_h=5.0, threshold_ds=5.0
+    )
+    assert not flags_no_rain.iloc[0]
+    assert not flags_no_rain.iloc[1]
+    assert flags_no_rain.iloc[2] # dS > 5 and NO rain -> True

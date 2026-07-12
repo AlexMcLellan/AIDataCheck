@@ -22,7 +22,7 @@ def test_check_battery():
     batt = pd.Series([13.0, 11.0, 11.0])
     expected_ghi = pd.Series([500.0, 500.0, 0.0])
     
-    flags = check_battery(batt, expected_ghi, threshold_v=11.5, expected_ghi_threshold=200)
+    flags = check_battery(batt, expected_ghi, threshold_v=11.5, sw_in_threshold=200)
     assert not flags[0]
     assert flags[1]  # Low battery and high GHI -> True
     assert not flags[2] # Low battery but low GHI -> False

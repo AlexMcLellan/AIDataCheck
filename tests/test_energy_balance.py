@@ -52,4 +52,4 @@ def test_calculate_expected_clear_sky_solar():
     
     assert len(ghi) == 1
     # GHI should be high at noon on the equinox at the equator
-    assert ghi.iloc[0] > 900.0 
+    assert ghi[0] > 900.0 
