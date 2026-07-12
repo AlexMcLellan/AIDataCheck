@@ -284,3 +284,24 @@ def check_radiation_redundancy(rad_1, rad_2, threshold=50.0):
     Flags if secondary radiation measurements disagree with primary.
     """
     return np.abs(rad_1 - rad_2) > threshold
+
+def check_dynamic_solar_bounds(measured_sw, expected_ghi, weather_codes):
+    """
+    Applies dynamic bounding based on the Met Office weather code.
+    Code 1 = Sunny (lower bound = 70% expected).
+    Code 8 = Overcast (upper bound = 40% expected).
+    """
+    flags = pd.Series(False, index=measured_sw.index)
+    
+    # Only check during daylight when expected_ghi is meaningful
+    is_day = expected_ghi > 10
+    
+    # Sunny: lower bound check
+    is_sunny = weather_codes == 1
+    flags.loc[is_day & is_sunny] = measured_sw[is_day & is_sunny] < (expected_ghi[is_day & is_sunny] * 0.70)
+    
+    # Overcast: upper bound check
+    is_overcast = weather_codes == 8
+    flags.loc[is_day & is_overcast] = measured_sw[is_day & is_overcast] > (expected_ghi[is_day & is_overcast] * 0.40)
+    
+    return flags

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from ingest.parsers import load_and_merge_data, resample_to_frequency
-from models.energy_balance import calculate_energy_balance_residual, calculate_expected_clear_sky_solar, calculate_longwave_from_surface_temp, estimate_sensible_heat_from_temp, calculate_soil_heat_storage, estimate_soil_heat_flux_from_gradient
+from models.energy_balance import calculate_energy_balance_residual, calculate_expected_clear_sky_solar, calculate_longwave_from_surface_temp, estimate_sensible_heat_from_temp, calculate_soil_heat_storage, estimate_soil_heat_flux_from_gradient, calculate_aerodynamic_resistance
 from models.water_balance import calculate_water_balance_residual, integrate_soil_moisture_profile, flag_rain_soil_moisture_mismatch
 from models.thermodynamics import check_dewpoint
 from models.qc_rules import (
@@ -26,7 +26,8 @@ from models.qc_rules import (
     check_radiation_redundancy,
     check_uncorrected_longwave,
     check_static_calibration,
-    check_shfp_thermal_gradient_mismatch
+    check_shfp_thermal_gradient_mismatch,
+    check_dynamic_solar_bounds
 )
 from models.soil_moisture import van_genuchten, get_soil_params
 
@@ -85,17 +86,29 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
         print(f"Could not calculate clear-sky solar input: {e}")
         df_resampled['Expected_GHI'] = 0.0
         
+    # Mocking Met Office Weather Codes for historical dataset testing
+    print("Mocking Met Office weather_code for historical data...")
+    # Alternating days: Even days = Overcast (8), Odd days = Sunny (1)
+    df_resampled['weather_code'] = np.where(df_resampled.index.day % 2 == 0, 8, 1)
+
     # Check if measured solar exceeds theoretical maximum (cloudless sky + 20% buffer)
     if 'R_SW_in_Avg' in df_resampled.columns:
         df_resampled['flag_sw_exceeds_clearsky'] = check_solar_radiation_bounds(df_resampled['R_SW_in_Avg'], df_resampled['Expected_GHI'])
+        
+        # Apply Dynamic Weather Bounds (Lower bound if Sunny, tighter Upper bound if Overcast)
+        df_resampled['flag_sw_dynamic_weather_mismatch'] = check_dynamic_solar_bounds(df_resampled['R_SW_in_Avg'], df_resampled['Expected_GHI'], df_resampled['weather_code'])
+        
         # Check if measured solar is non-zero at night
         df_resampled['flag_sw_in_night_noise'] = check_nighttime_shortwave(df_resampled['R_SW_in_Avg'], df_resampled['Expected_GHI'])
     if 'R_SW_out_Avg' in df_resampled.columns:
         df_resampled['flag_sw_out_night_noise'] = check_nighttime_shortwave(df_resampled['R_SW_out_Avg'], df_resampled['Expected_GHI'])
         
     # Do the same for the PAR sensor (PPFD_IN_Avg) by converting umol/m2/s back to W/m2 approx (divide by ~2.1)
+    # PAR only constitutes ~45% of the full shortwave solar spectrum (GHI).
     if 'PPFD_IN_Avg' in df_resampled.columns:
-        df_resampled['flag_par_exceeds_clearsky'] = check_solar_radiation_bounds(df_resampled['PPFD_IN_Avg'] / 2.1, df_resampled['Expected_GHI'])
+        expected_par_wm2 = df_resampled['Expected_GHI'] * 0.45
+        df_resampled['flag_par_exceeds_clearsky'] = check_solar_radiation_bounds(df_resampled['PPFD_IN_Avg'] / 2.1, expected_par_wm2)
+        df_resampled['flag_par_dynamic_weather_mismatch'] = check_dynamic_solar_bounds(df_resampled['PPFD_IN_Avg'] / 2.1, expected_par_wm2, df_resampled['weather_code'])
 
     output_dir = os.path.join(data_dir, 'data')
     os.makedirs(output_dir, exist_ok=True)
@@ -242,11 +255,24 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
                 )
 
     # 12. Aerodynamic Sensible Heat Estimation
-    if all(c in df_resampled.columns for c in ['TargetTemp_C_Avg', 'AirTemp_C']):
+    if 'TargetTemp_C_Avg' in df_resampled.columns and 'AirTemp_C' in df_resampled.columns:
+        if 'Windspeed' in df_resampled.columns:
+            wind_speed = df_resampled['Windspeed']
+        elif 'WS' in df_resampled.columns:
+            wind_speed = df_resampled['WS']
+        else:
+            wind_speed = None
+
+        if wind_speed is not None:
+            print("Calculating dynamic aerodynamic resistance from wind speed...")
+            r_a = calculate_aerodynamic_resistance(wind_speed, z_m=3.0)
+        else:
+            r_a = 50.0
+
         df_resampled['Estimated_H_W_m2'] = estimate_sensible_heat_from_temp(
-            df_resampled['TargetTemp_C_Avg'], 
-            df_resampled['AirTemp_C'], 
-            aerodynamic_resistance=50.0,
+            df_resampled['TargetTemp_C_Avg'],
+            df_resampled['AirTemp_C'],
+            aerodynamic_resistance=r_a,
             altitude=altitude
         )
 

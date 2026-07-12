@@ -117,6 +117,33 @@ def check_solar_radiation(sw_in, ppfd, albedo=None):
     ratio = ppfd / np.where(sw_in > 10, sw_in, np.nan)
     return ratio
 
+def calculate_aerodynamic_resistance(wind_speed, z_m=3.0, z_0m=0.03, z_0h=0.003):
+    """
+    Calculate aerodynamic resistance (r_a) using the standard logarithmic wind profile.
+    Assumes neutral atmospheric stability for simplicity.
+    
+    Parameters:
+    wind_speed : pd.Series or float
+        Wind speed in m/s.
+    z_m : float
+        Measurement height of wind speed and air temperature (m).
+    z_0m : float
+        Momentum roughness length (m) (approx 0.03 for short grass/soil).
+    z_0h : float
+        Heat roughness length (m) (approx 0.1 * z_0m).
+        
+    Returns:
+    pd.Series or float
+        Aerodynamic resistance (s/m).
+    """
+    k = 0.4  # von Karman constant
+    
+    # Prevent division by absolute zero wind speed
+    wind_safe = np.where(wind_speed < 0.1, 0.1, wind_speed)
+    
+    r_a = (np.log(z_m / z_0m) * np.log(z_m / z_0h)) / ((k ** 2) * wind_safe)
+    return r_a
+
 def estimate_sensible_heat_from_temp(surface_temp, air_temp, aerodynamic_resistance, altitude=0):
     """
     Estimate Sensible Heat (H) from surface temperature and air temperature.
