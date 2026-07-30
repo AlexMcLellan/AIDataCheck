@@ -276,6 +276,24 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
             altitude=altitude
         )
 
+    # 12.5 Full Surface Energy Balance Closure
+    rad_cols = ['R_SW_in_Avg', 'R_SW_out_Avg', 'R_LW_in_Avg', 'R_LW_out_Avg']
+    eb_cols = rad_cols + ['Estimated_H_W_m2', 'G_PLATE_1_1_1']
+    if all(c in df_resampled.columns for c in eb_cols):
+        # Calculate Net Radiation (Rn)
+        rn = (df_resampled['R_SW_in_Avg'] - df_resampled['R_SW_out_Avg'] + 
+              df_resampled['R_LW_in_Avg'] - df_resampled['R_LW_out_Avg'])
+        
+        g = df_resampled['G_PLATE_1_1_1']
+        h = df_resampled['Estimated_H_W_m2']
+        
+        # Calculate residual: Rn - G - H - LE
+        # Assuming LE = 0 for the worst-case check
+        residual = calculate_energy_balance_residual(rn, g, h, 0.0)
+        
+        # Flag if Residual < -50 W/m2 (impossible energy creation without LE)
+        df_resampled['flag_energy_balance_anomaly'] = residual < -50.0
+
     # 13. IR Temp Consistency
     if all(c in df_resampled.columns for c in ['TargetTemp_C_Min', 'TargetTemp_C_Avg', 'TargetTemp_C_Max']):
         df_resampled['flag_ir_target_anomaly'] = check_ir_temp_consistency(df_resampled['TargetTemp_C_Min'], df_resampled['TargetTemp_C_Avg'], df_resampled['TargetTemp_C_Max'])
