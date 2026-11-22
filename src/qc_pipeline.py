@@ -2,9 +2,32 @@ import os
 import pandas as pd
 import numpy as np
 from ingest.parsers import load_and_merge_data, resample_to_frequency
-from models.energy_balance import calculate_energy_balance_residual, calculate_expected_clear_sky_solar, calculate_longwave_from_surface_temp, estimate_sensible_heat_from_temp, calculate_soil_heat_storage, estimate_soil_heat_flux_from_gradient, calculate_aerodynamic_resistance
+from models.energy_balance import (
+    calculate_energy_balance_residual,
+    calculate_expected_clear_sky_solar,
+    calculate_longwave_from_surface_temp,
+    estimate_sensible_heat_from_temp,
+    calculate_soil_heat_storage,
+    estimate_soil_heat_flux_from_gradient,
+    calculate_aerodynamic_resistance,
+    check_turbulent_flux_sum,
+    check_ec_flux_bounds,
+    check_bowen_ratio,
+    check_low_turbulence_decoupling,
+    check_ec_turbulence_quality,
+    check_radiative_surface_temp_consistency,
+    check_albedo_ndvi_concordance,
+    check_monin_obukhov_stability_consistency,
+    check_integral_turbulence_characteristics,
+    check_priestley_taylor_bounds
+)
 from models.water_balance import calculate_water_balance_residual, integrate_soil_moisture_profile, flag_rain_soil_moisture_mismatch
-from models.thermodynamics import check_dewpoint
+from models.thermodynamics import (
+    check_dewpoint,
+    check_psychrometric_closure,
+    check_sonic_temperature_consistency,
+    check_dual_station_rh
+)
 from models.qc_rules import (
     check_statistical_anomalies,
     check_time_continuity,
@@ -19,6 +42,8 @@ from models.qc_rules import (
     check_ir_temp_consistency,
     check_body_temp,
     check_soil_temp_redundancy,
+    check_soil_vwc_redundancy,
+    check_soil_temp_3way,
     check_permittivity,
     check_precip_consistency,
     check_solar_radiation_bounds,
@@ -27,9 +52,19 @@ from models.qc_rules import (
     check_uncorrected_longwave,
     check_static_calibration,
     check_shfp_thermal_gradient_mismatch,
-    check_dynamic_solar_bounds
+    check_dynamic_solar_bounds,
+    check_matric_potential_decoupling
 )
-from models.soil_moisture import van_genuchten, get_soil_params
+from models.soil_moisture import (
+    van_genuchten,
+    get_soil_params,
+    check_topp_permittivity_consistency,
+    check_hilhorst_pore_water_ec,
+    check_archies_law_salinity,
+    check_crns_depth_profile_integration,
+    check_snow_water_equivalent_consistency,
+    check_darcy_hydraulic_gradient
+)
 
 def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types='silt_loam', battery_chemistry='lifepo4', nr01_sensitivities=None):
     if nr01_sensitivities is None:
@@ -226,7 +261,7 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
 
     # 11. Rain vs Soil Moisture Mismatch (Time-Lagged by Depth)
     if 'RainE_Standard_Int_1m' in df_resampled.columns:
-        tdr_depth_map = {1: 0.05, 2: 0.10, 3: 0.20, 4: 0.50, 5: 1.00, 6: 1.50}
+        tdr_depth_map = {1: 0.05, 2: 0.10, 3: 0.20, 4: 0.30, 5: 0.40, 6: 0.50}
         for i in range(1, 7):
             vwc_col = f'TDR310_{i}_avg_VWC'
             if vwc_col in df_resampled.columns:
@@ -294,11 +329,86 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
         # Flag if Residual < -50 W/m2 (impossible energy creation without LE)
         df_resampled['flag_energy_balance_anomaly'] = residual < -50.0
 
-    # 13. IR Temp Consistency
+    # 12.6 Eddy-Covariance Turbulent Flux Validation
+    if 'H_EC' in df_resampled.columns and 'LE' in df_resampled.columns:
+        expected_ghi = df_resampled['Expected_GHI'] if 'Expected_GHI' in df_resampled.columns else None
+        
+        # 1. Total turbulent energy flux sum (H + LE) check against solar & nocturnal limits
+        df_resampled['flag_ec_turbulent_sum_anomaly'] = check_turbulent_flux_sum(
+            df_resampled['H_EC'], df_resampled['LE'], expected_ghi=expected_ghi
+        )
+        
+        # 2. Individual physical boundary checks
+        df_resampled['flag_ec_flux_bounds'] = check_ec_flux_bounds(
+            df_resampled['H_EC'], df_resampled['LE']
+        )
+        
+        # 3. Bowen ratio plausibility during daylight transpiration
+        df_resampled['flag_ec_bowen_ratio'] = check_bowen_ratio(
+            df_resampled['H_EC'], df_resampled['LE'], expected_ghi=expected_ghi
+        )
+        
+        # 3b. Priestley-Taylor Evaporative Upper Bound
+        if all(c in df_resampled.columns for c in ['R_SW_in_Avg', 'R_SW_out_Avg', 'R_LW_in_Avg', 'R_LW_out_Avg', 'G_PLATE_1_1_1', 'AirTemp_C']):
+            rn_net = (df_resampled['R_SW_in_Avg'] - df_resampled['R_SW_out_Avg'] + 
+                      df_resampled['R_LW_in_Avg'] - df_resampled['R_LW_out_Avg'])
+            df_resampled['flag_priestley_taylor_exceedance'] = check_priestley_taylor_bounds(
+                df_resampled['LE'], rn_net, df_resampled['G_PLATE_1_1_1'], df_resampled['AirTemp_C']
+            )
+        
+    if 'u_star' in df_resampled.columns:
+        # 4. Low turbulence / decoupling flag (u* < 0.10 m/s)
+        df_resampled['flag_ec_low_turbulence'] = check_low_turbulence_decoupling(df_resampled['u_star'])
+        
+        # 4b. Monin-Obukhov Stability Sign Consistency
+        if 'L_MO' in df_resampled.columns and 'H_EC' in df_resampled.columns:
+            df_resampled['flag_mo_stability_anomaly'] = check_monin_obukhov_stability_consistency(
+                df_resampled['L_MO'], df_resampled['H_EC'], df_resampled['u_star']
+            )
+            
+        # 4c. Integral Turbulence Characteristics (ITC)
+        if 'sigma_w' in df_resampled.columns:
+            df_resampled['flag_itc_turbulence_anomaly'] = check_integral_turbulence_characteristics(
+                df_resampled['sigma_w'], df_resampled['u_star']
+            )
+        
+    if 'qc_H_flag' in df_resampled.columns:
+        # 5. Mauder & Foken / ICOS quality flag for sensible heat
+        df_resampled['flag_ec_qc_h_rejected'] = check_ec_turbulence_quality(df_resampled['qc_H_flag'])
+        
+    if 'qc_LE_flag' in df_resampled.columns:
+        # 6. Mauder & Foken / ICOS quality flag for latent heat
+        df_resampled['flag_ec_qc_le_rejected'] = check_ec_turbulence_quality(df_resampled['qc_LE_flag'])
+
+    # 12.7 Atmospheric Thermodynamics & Sonic Cross-Checks
+    if all(c in df_resampled.columns for c in ['AirTemp_C', 'RH', 'DewPoint_C']):
+        vpd_s = df_resampled['VPD'] if 'VPD' in df_resampled.columns else None
+        df_resampled['flag_psychrometric_closure'] = check_psychrometric_closure(
+            df_resampled['AirTemp_C'], df_resampled['RH'], df_resampled['DewPoint_C'], measured_vpd=vpd_s
+        )
+        
+    if 'Sonic_Temp_C' in df_resampled.columns and 'AirTemp_C' in df_resampled.columns:
+        h2o_frac = df_resampled['H2O_mole_fraction'] if 'H2O_mole_fraction' in df_resampled.columns else None
+        df_resampled['flag_sonic_temp_mismatch'] = check_sonic_temperature_consistency(
+            df_resampled['Sonic_Temp_C'], df_resampled['AirTemp_C'], h2o_mole_frac=h2o_frac
+        )
+        
+    if 'RH' in df_resampled.columns and 'RH_EC' in df_resampled.columns:
+        df_resampled['flag_dual_rh_mismatch'] = check_dual_station_rh(df_resampled['RH'], df_resampled['RH_EC'])
+
+    # 13. IR Temp Consistency & Stefan-Boltzmann Cross-Verification
     if all(c in df_resampled.columns for c in ['TargetTemp_C_Min', 'TargetTemp_C_Avg', 'TargetTemp_C_Max']):
         df_resampled['flag_ir_target_anomaly'] = check_ir_temp_consistency(df_resampled['TargetTemp_C_Min'], df_resampled['TargetTemp_C_Avg'], df_resampled['TargetTemp_C_Max'])
     if all(c in df_resampled.columns for c in ['BodyTemp_C_Min', 'BodyTemp_C_Avg', 'BodyTemp_C_Max']):
         df_resampled['flag_ir_body_anomaly'] = check_ir_temp_consistency(df_resampled['BodyTemp_C_Min'], df_resampled['BodyTemp_C_Avg'], df_resampled['BodyTemp_C_Max'])
+    if all(c in df_resampled.columns for c in ['R_LW_in_Avg', 'R_LW_out_Avg', 'TargetTemp_C_Avg']):
+        df_resampled['flag_radiative_surface_temp_mismatch'] = check_radiative_surface_temp_consistency(
+            df_resampled['R_LW_in_Avg'], df_resampled['R_LW_out_Avg'], df_resampled['TargetTemp_C_Avg']
+        )
+    if all(c in df_resampled.columns for c in ['R_SW_in_Avg', 'R_SW_out_Avg', 'NDVI']):
+        df_resampled['flag_albedo_ndvi_discordance'] = check_albedo_ndvi_concordance(
+            df_resampled['R_SW_in_Avg'], df_resampled['R_SW_out_Avg'], df_resampled['NDVI']
+        )
 
     # 14. Sensor Body Temp bounds
     if 'T_nr_Avg' in df_resampled.columns and 'AirTemp_C' in df_resampled.columns:
@@ -313,7 +423,16 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
     if all(c in df_resampled.columns for c in ['LW_rad_Avg', 'R_LW_in_Avg']):
         df_resampled['flag_lw_rad_mismatch'] = check_radiation_redundancy(df_resampled['LW_rad_Avg'], df_resampled['R_LW_in_Avg'])
         
-    # (Net radiation check removed because T_nr_Avg is actually a temperature)
+    # 15b. Landscape CRNS & Snow Water Equivalent Consistency
+    if 'Soil_Moisture_CRNS' in df_resampled.columns:
+        tdr_dict = {i: df_resampled[f'TDR310_{i}_avg_VWC'] for i in range(1, 7) if f'TDR310_{i}_avg_VWC' in df_resampled.columns}
+        df_resampled['flag_crns_profile_mismatch'] = check_crns_depth_profile_integration(
+            df_resampled['Soil_Moisture_CRNS'], tdr_dict
+        )
+    if all(c in df_resampled.columns for c in ['SWE_CRNS', 'AirTemp_C', 'R_SW_in_Avg', 'R_SW_out_Avg']):
+        df_resampled['flag_swe_false_positive'] = check_snow_water_equivalent_consistency(
+            df_resampled['SWE_CRNS'], df_resampled['AirTemp_C'], df_resampled['R_SW_in_Avg'], df_resampled['R_SW_out_Avg']
+        )
         
     # 16. Precipitation consistency
     if all(c in df_resampled.columns for c in ['RainE_Standard_Precip_Tot', 'RainE_Standard_Int_1m']):
@@ -356,6 +475,52 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
         # Soil Temp redundancy
         if f'TEROS22_{i}_avg_Temp' in df_resampled.columns and f'TDR310_{i}_avg_T' in df_resampled.columns:
             df_resampled[f'flag_soil_temp_mismatch_{i}'] = check_soil_temp_redundancy(df_resampled[f'TEROS22_{i}_avg_Temp'], df_resampled[f'TDR310_{i}_avg_T'])
+            
+        # SoilVUE Redundancy Checks
+        if f'TDR310_{i}_avg_VWC' in df_resampled.columns and f'SoilVUE_{i}_avg_VWC' in df_resampled.columns:
+            df_resampled[f'flag_tdr_soilvue_vwc_mismatch_{i}'] = check_soil_vwc_redundancy(df_resampled[f'TDR310_{i}_avg_VWC'], df_resampled[f'SoilVUE_{i}_avg_VWC'])
+            
+        if f'TEROS22_{i}_avg_Temp' in df_resampled.columns and f'TDR310_{i}_avg_T' in df_resampled.columns and f'SoilVUE_{i}_avg_Temp' in df_resampled.columns:
+            df_resampled[f'flag_soil_temp_3way_mismatch_{i}'] = check_soil_temp_3way(df_resampled[f'TEROS22_{i}_avg_Temp'], df_resampled[f'TDR310_{i}_avg_T'], df_resampled[f'SoilVUE_{i}_avg_Temp'])
+            
+        # Soil Matric Potential Hydraulic Decoupling Check (TEROS 22)
+        if f'TEROS22_{i}_avg_MP' in df_resampled.columns:
+            vwc_s = df_resampled[f'TDR310_{i}_avg_VWC'] if f'TDR310_{i}_avg_VWC' in df_resampled.columns else None
+            # Layer-specific decoupling thresholds (-200 kPa topsoil, deeper clay higher suction)
+            decoupling_threshold = -200.0 if i == 1 else (-400.0 if i == 2 else -500.0)
+            df_resampled[f'flag_teros22_{i}_decoupled'] = check_matric_potential_decoupling(
+                df_resampled[f'TEROS22_{i}_avg_MP'], 
+                vwc_series=vwc_s,
+                decoupling_threshold_kpa=decoupling_threshold,
+                vwc_threshold=0.08
+            )
+
+        # 19b. Topp Permittivity Consistency Check
+        if f'TDR310_{i}_avg_VWC' in df_resampled.columns and f'TDR310_{i}_avg_P' in df_resampled.columns:
+            df_resampled[f'flag_tdr_{i}_topp_mismatch'] = check_topp_permittivity_consistency(
+                df_resampled[f'TDR310_{i}_avg_VWC'], df_resampled[f'TDR310_{i}_avg_P']
+            )
+
+        # 19c. Hilhorst (2000) Pore-Water EC Validation
+        if all(c in df_resampled.columns for c in [f'TDR310_{i}_avg_EC', f'TDR310_{i}_avg_P', f'TDR310_{i}_avg_PEC', f'TDR310_{i}_avg_T']):
+            df_resampled[f'flag_tdr_{i}_hilhorst_pec_mismatch'] = check_hilhorst_pore_water_ec(
+                df_resampled[f'TDR310_{i}_avg_EC'], df_resampled[f'TDR310_{i}_avg_P'],
+                df_resampled[f'TDR310_{i}_avg_PEC'], df_resampled[f'TDR310_{i}_avg_T']
+            )
+
+        # 19d. Archie's Law Geometric Tortuosity Bound
+        if all(c in df_resampled.columns for c in [f'TDR310_{i}_avg_EC', f'TDR310_{i}_avg_PEC', f'TDR310_{i}_avg_VWC']):
+            df_resampled[f'flag_tdr_{i}_archies_bound'] = check_archies_law_salinity(
+                df_resampled[f'TDR310_{i}_avg_EC'], df_resampled[f'TDR310_{i}_avg_PEC'], df_resampled[f'TDR310_{i}_avg_VWC']
+            )
+
+    # 19e. Darcy-Buckingham Upward Suction vs Infiltration Check (Layer 1 to 2)
+    if all(c in df_resampled.columns for c in ['TEROS22_1_avg_MP', 'TEROS22_2_avg_MP', 'TDR310_2_avg_VWC']):
+        rain_s = df_resampled['RainE_Standard_Int_1m'] if 'RainE_Standard_Int_1m' in df_resampled.columns else None
+        df_resampled['flag_darcy_gradient_mismatch_1_2'] = check_darcy_hydraulic_gradient(
+            df_resampled['TEROS22_1_avg_MP'], df_resampled['TEROS22_2_avg_MP'], df_resampled['TDR310_2_avg_VWC'], rain_int=rain_s
+        )
+
     # 13. Soil Moisture Validation (van Genuchten curve)
     for i in range(1, 7):
         # Determine soil type for this specific depth
@@ -399,7 +564,7 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
         summary_lines.append("------------------------")
         print(summary_lines[-1])
 
-    output_dir = os.path.join(data_dir, 'data')
+    output_dir = data_dir if os.path.basename(data_dir) == 'data' else os.path.join(data_dir, 'data')
     os.makedirs(output_dir, exist_ok=True)
     
     # Save CSV
@@ -418,16 +583,16 @@ def run_pipeline(data_dir, latitude, longitude, altitude=0, tz='UTC', soil_types
 
 if __name__ == "__main__":
     # Assuming running from the root of the repo
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
     
-    # Example of depth-specific soil types
+    # Soil profile: loam (top 30cm), clay (below 30cm)
     site_soil_profile = {
-        1: 'sand',
-        2: 'sandy_loam',
-        3: 'loam',
-        4: 'silty_clay_loam',
-        5: 'silty_clay_loam',
-        6: 'clay'
+        1: 'loam',  # 5cm
+        2: 'loam',  # 10cm
+        3: 'loam',  # 20cm
+        4: 'clay',  # 30cm
+        5: 'clay',  # 40cm
+        6: 'clay'   # 50cm
     }
     
     

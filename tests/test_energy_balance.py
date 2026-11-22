@@ -71,3 +71,56 @@ def test_calculate_expected_clear_sky_solar():
     assert len(ghi) == 1
     # GHI should be high at noon on the equinox at the equator
     assert ghi[0] > 900.0 
+
+def test_check_radiative_surface_temp_consistency():
+    from models.energy_balance import check_radiative_surface_temp_consistency
+    # At ~20C (293.15K), blackbody LW is sigma * T^4 = 5.67e-8 * (293.15)^4 ~ 418 W/m2
+    lw_in = pd.Series([350.0, 350.0])
+    lw_out = pd.Series([418.0, 418.0])
+    target_temp = pd.Series([20.0, 35.0]) # second is 15C discrepancy
+    
+    flags = check_radiative_surface_temp_consistency(lw_in, lw_out, target_temp, threshold=3.5)
+    assert not flags[0]
+    assert flags[1]
+
+def test_check_albedo_ndvi_concordance():
+    from models.energy_balance import check_albedo_ndvi_concordance
+    sw_in = pd.Series([600.0, 600.0])
+    sw_out = pd.Series([120.0, 300.0]) # albedo: 0.20, 0.50
+    ndvi = pd.Series([0.75, 0.75])     # Dense vegetation with 0.50 albedo is anomalous
+    
+    flags = check_albedo_ndvi_concordance(sw_in, sw_out, ndvi)
+    assert not flags[0]
+    assert flags[1]
+
+def test_check_monin_obukhov_stability_consistency():
+    from models.energy_balance import check_monin_obukhov_stability_consistency
+    l_mo = pd.Series([-100.0, 100.0]) # unstable, stable
+    h_ec = pd.Series([150.0, 150.0])  # H > 0 with L > 0 is sign violation
+    u_star = pd.Series([0.35, 0.35])
+    
+    flags = check_monin_obukhov_stability_consistency(l_mo, h_ec, u_star)
+    assert not flags[0]
+    assert flags[1]
+
+def test_check_integral_turbulence_characteristics():
+    from models.energy_balance import check_integral_turbulence_characteristics
+    sigma_w = pd.Series([0.45, 1.20]) # ratio: 0.45/0.35 = 1.28 (normal), 1.20/0.35 = 3.42 (excessive)
+    u_star = pd.Series([0.35, 0.35])
+    
+    flags = check_integral_turbulence_characteristics(sigma_w, u_star)
+    assert not flags[0]
+    assert flags[1]
+
+def test_check_priestley_taylor_bounds():
+    from models.energy_balance import check_priestley_taylor_bounds
+    # Available energy = 400 W/m2. Delta/(Delta+gamma) ~ 0.65 -> LE_eq ~ 260 W/m2
+    le = pd.Series([250.0, 700.0]) # second exceeds 2 * LE_eq
+    rn = pd.Series([450.0, 450.0])
+    g = pd.Series([50.0, 50.0])
+    ta = pd.Series([20.0, 20.0])
+    
+    flags = check_priestley_taylor_bounds(le, rn, g, ta, alpha_max=2.0)
+    assert not flags[0]
+    assert flags[1]
+ 

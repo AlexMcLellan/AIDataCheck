@@ -145,6 +145,106 @@ The time index ($t$) of the datalogger is checked for missing rows against the e
 
 ---
 
+## 10. Soil Dielectrics, Permittivity & Pore-Water Salinity
+
+### A. Topp's Dielectric Permittivity Consistency
+Volumetric water content ($\theta$) is cross-validated against apparent dielectric permittivity ($\varepsilon_a$) using the universal empirical equation of **Topp et al. (1980)** [11]:
+\[ \theta(\varepsilon_a) = -0.053 + 0.0292 \varepsilon_a - 5.5 \times 10^{-4} \varepsilon_a^2 + 4.3 \times 10^{-6} \varepsilon_a^3 \]
+- **Variables Checked**: `TDR310_X_avg_VWC` vs `TDR310_X_avg_P` (Depths 1 to 6)
+- **Flagged if**: $|\theta_{meas} - \theta(\varepsilon_a)| > 0.035 \text{ m}^3/\text{m}^3$ (detects firmware calibration errors, air gaps along waveguides, or organic dielectric distortion).
+
+### B. Hilhorst (2000) Pore-Water Electrical Conductivity (EC) Model
+Pore-water electrical conductivity ($\sigma_p$) is compared against theoretical dielectric-conductivity transformation of bulk EC ($\sigma_b$), apparent permittivity ($\varepsilon_a$), and temperature [12]:
+\[ \sigma_{p,theory} = \frac{\varepsilon_w(T) \cdot \sigma_b}{\varepsilon_a - \varepsilon_0} \]
+Where $\varepsilon_w(T) = 80.1 - 0.35(T - 20)$ and $\varepsilon_0 \approx 4.1$ (dry soil offset).
+- **Variables Checked**: `TDR310_X_avg_EC`, `TDR310_X_avg_P`, `TDR310_X_avg_PEC`, `TDR310_X_avg_T`
+- **Flagged if**: Reported $\sigma_p$ deviates from $\sigma_{p,theory}$ by $> 2.5\times$ or $< 0.4\times$ when $\varepsilon_a \ge 6.0$.
+
+### C. Archie's Law Geometric Tortuosity Bound
+Enforces the physical upper limit that bulk soil conductivity cannot exceed pore liquid conduction:
+\[ \sigma_b \le \sigma_p \cdot \theta^m \]
+- **Flagged if**: $\sigma_b > 1.30 \cdot \sigma_p \cdot \theta^{1.5}$ when $\theta > 0.05$.
+
+---
+
+## 11. Landscape vs. Point-Scale Hydrology
+
+### A. Cosmic-Ray Neutron Sensing (CRNS Finapp) Profile Integration
+The landscape-scale soil moisture footprint (radius $> 100\text{ m}$) measured by the Finapp neutron counter is cross-validated against an exponentially depth-weighted integration of the TDR waveguide profile [13]:
+\[ \theta_{integrated} = \sum_{i=1}^6 w(z_i) \theta(z_i) \quad \text{where } w(z) = \exp(-z / 15.0\text{ cm}) \]
+- **Variables Checked**: `Soil moisture (Finapp)` vs `TDR310_1..6_avg_VWC`
+- **Flagged if**: $|\theta_{CRNS} - \theta_{integrated}| > 0.08 \text{ m}^3/\text{m}^3$.
+
+### B. Snow Water Equivalent (SWE) vs. Optical & Thermal State
+Validates reported cosmic-ray snow water equivalent against surface energy conditions:
+- **Flagged if**: $\text{SWE} > 1.0\text{ mm}$ while $T_{air} > 6^\circ\text{C}$ and broadband albedo $\alpha < 0.30$.
+
+---
+
+## 12. Atmospheric Thermodynamics & Sonic Anemometry
+
+### A. Magnus-Tetens Psychrometric Closure
+Redundantly verifies thermodynamic consistency between Air Temperature, Relative Humidity, Dew Point, and Vapor Pressure Deficit (VPD):
+\[ e_s(T) = 0.61078 \exp\left(\frac{17.27 T}{T + 237.3}\right), \quad \text{VPD} = e_s(T) - e_s(T_d) \]
+- **Variables Checked**: `AirTemp_C`, `RH`, `DewPoint_C`, `VPD`
+- **Flagged if**: $|\Delta T_d| > 1.0^\circ\text{C}$ or $|\Delta \text{VPD}| > 0.15\text{ kPa}$.
+
+### B. Sonic Virtual Temperature ($T_{sonic}$) Consistency
+Sonic anemometer acoustic temperature measures virtual temperature $T_v$ (Kaimal & Businger, 1963) [14]:
+\[ T_v = (T_{air} + 273.15)(1 + 0.51 q) - 273.15 \]
+- **Variables Checked**: `Sonic_Temp_C` vs `AirTemp_C` and `H2O_mole_fraction`
+- **Flagged if**: $|T_{sonic} - T_v| > 1.5^\circ\text{C}$ (detects sonic pin wetting, solar heating of transducers, or thermometer radiation bias).
+
+### C. Dual-Station RH Concordance
+Cross-checks weather station humidity against open-path IRGA gas analyzer cavity humidity:
+- **Variables Checked**: `RH` vs `RH_EC`
+- **Flagged if**: $|\text{RH} - \text{RH}_{EC}| > 8.0\%$.
+
+---
+
+## 13. Surface Optics & Infrared Thermometry
+
+### A. Stefan-Boltzmann Radiative Surface Temperature vs IR Radiometer
+Calculates radiometric surface temperature from 4-component net radiometer longwave fluxes:
+\[ T_{rad} = \left[\frac{R_{LW,out} - (1 - \varepsilon) R_{LW,in}}{\varepsilon \sigma}\right]^{1/4} - 273.15 \]
+- **Variables Checked**: `R_LW_in_Avg`, `R_LW_out_Avg`, `TargetTemp_C_Avg`
+- **Flagged if**: $|T_{rad} - T_{target}| > 3.5^\circ\text{C}$.
+
+### B. Broadband Albedo vs Spectral NDVI Concordance
+Enforces optical consistency between broadband shortwave reflectance ($\alpha = SW_{out} / SW_{in}$) and spectral vegetation index:
+- **Flagged if**: $\text{NDVI} > 0.65$ with $\alpha > 0.32$ (optics fouling/snow), or $\text{NDVI} < 0.15$ with $\alpha < 0.08$.
+
+---
+
+## 14. Micrometeorology & Eddy Covariance Turbulence
+
+### A. Monin-Obukhov Stability ($L$) vs. Sensible Heat ($H_{EC}$) Sign Consistency
+- **Convective Daytime**: $H_{EC} > 20\text{ W/m}^2 \implies L < 0$
+- **Stable Inversion**: $H_{EC} < -20\text{ W/m}^2 \implies L > 0$
+- **Flagged if**: Sign contradiction occurs when friction velocity $u^* \ge 0.10\text{ m/s}$.
+
+### B. Integral Turbulence Characteristics (ITC / Kansas Similarity)
+Evaluates vertical velocity variance ratio under surface layer similarity:
+\[ \frac{\sigma_w}{u^*} \approx 1.25 \pm 0.30 \]
+- **Variables Checked**: `sigma_w` vs `u_star`
+- **Flagged if**: $\frac{\sigma_w}{u^*} < 0.6$ or $> 2.5$ when $u^* \ge 0.15\text{ m/s}$ (detects tower mast flow distortion or sonic vibration).
+
+### C. Priestley-Taylor Evaporation Bound
+Compares latent heat flux ($LE$) against theoretical equilibrium evapotranspiration:
+\[ LE_{eq} = \frac{\Delta}{\Delta + \gamma}(R_n - G) \]
+- **Flagged if**: $LE > 2.0 \cdot LE_{eq} + 50\text{ W/m}^2$ during daylight conditions ($R_n - G > 50\text{ W/m}^2$).
+
+---
+
+## 15. Subsurface Flow & Hydrodynamic Gradients
+
+### A. Darcy-Buckingham Upward Suction vs Deep Infiltration
+Calculates total hydraulic head $H = \psi_m - z$. When shallow soil is in severe deficit relative to deeper soil ($H_{shallow} \ll H_{deep}$), capillary suction drives upward evaporation.
+- **Variables Checked**: `TEROS22_1_avg_MP`, `TEROS22_2_avg_MP`, `TDR310_2_avg_VWC`, `RainE_Standard_Int_1m`
+- **Flagged if**: Deep soil water content increases rapidly ($\Delta \theta_2 / \Delta t > 0.02$) during strong upward matric suction with zero rainfall.
+
+---
+
 ## References
 1. Ineichen, P., & Perez, R. (2002). A new airmass independent formulation for the Linke turbidity coefficient. *Solar Energy*, 73(3), 151-157.
 2. Monteith, J. L., & Unsworth, M. H. (2013). *Principles of Environmental Physics* (4th ed.). Academic Press.
@@ -156,3 +256,8 @@ The time index ($t$) of the datalogger is checked for missing rows against the e
 8. Campbell, G. S., & Norman, J. M. (1998). *An Introduction to Environmental Biophysics* (2nd ed.). Springer.
 9. de Vries, D. A. (1963). Thermal properties of soils. In *Physics of plant environment* (pp. 210-235). North-Holland.
 10. Hillel, D. (1998). *Environmental Soil Physics*. Academic Press.
+11. Topp, G. C., Davis, J. L., & Annan, A. P. (1980). Electromagnetic determination of soil water content: Measurements in coaxial transmission lines. *Water Resources Research*, 16(3), 574-582.
+12. Hilhorst, M. A. (2000). A pore water conductivity sensor. *Soil Science Society of America Journal*, 64(6), 1922-1925.
+13. Desilets, D., & Zreda, M. (2010). Footprint characteristics for cosmic-ray soil moisture sensing. *Water Resources Research*, 46(11).
+14. Kaimal, J. C., & Businger, J. A. (1963). A continuous wave sonic anemometer-thermometer. *Journal of Applied Meteorology and Climatology*, 2(1), 156-164.
+

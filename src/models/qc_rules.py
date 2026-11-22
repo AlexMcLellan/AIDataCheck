@@ -247,8 +247,28 @@ def check_soil_temp_redundancy(t_teros, t_tdr, threshold=2.0):
     """
     Flags periods where two soil temperature sensors at the same depth differ significantly.
     """
-    # If either is NaN, we can't compare
     return (t_teros - t_tdr).abs() > threshold
+
+def check_soil_vwc_redundancy(vwc_tdr, vwc_soilvue, threshold=0.15):
+    """
+    Flags periods where TDR and SoilVUE volumetric water contents diverge beyond a threshold.
+    Standardizes units to volumetric fraction (0.0 - 1.0).
+    """
+    # Normalize TDR to fraction if reported in percentage (0 - 100)
+    tdr_frac = np.where(vwc_tdr > 1.0, vwc_tdr / 100.0, vwc_tdr)
+    soilvue_frac = np.where(vwc_soilvue > 1.0, vwc_soilvue / 100.0, vwc_soilvue)
+    
+    diff = np.abs(tdr_frac - soilvue_frac)
+    return pd.Series(diff > threshold, index=getattr(vwc_tdr, 'index', None))
+
+def check_soil_temp_3way(t_teros, t_tdr, t_soilvue, threshold=3.0):
+    """
+    Triple redundancy temperature check. Flags if the maximum spread between
+    TEROS22, TDR310, and SoilVUE10 exceeds the threshold.
+    """
+    df_temp = pd.concat([t_teros, t_tdr, t_soilvue], axis=1)
+    spread = df_temp.max(axis=1) - df_temp.min(axis=1)
+    return spread > threshold
 
 def check_shfp_thermal_gradient_mismatch(g_measured, g_theory, threshold=50.0):
     """
@@ -305,3 +325,60 @@ def check_dynamic_solar_bounds(measured_sw, expected_ghi, weather_codes):
     flags.loc[is_day & is_overcast] = measured_sw[is_day & is_overcast] > (expected_ghi[is_day & is_overcast] * 0.40)
     
     return flags
+
+def check_matric_potential_decoupling(mp_series, vwc_series=None, decoupling_threshold_kpa=-200.0, vwc_threshold=0.08):
+    """
+    Unified Physical Check for Tensiometer Hydraulic Decoupling:
+    
+    Flags periods where the tensiometer (TEROS 22) loses hydraulic continuity with the soil matrix.
+    Physical signature:
+    - Matric suction is elevated (|ψ| >= |decoupling_threshold_kpa|)
+    - AND soil moisture has dropped into the dry range (VWC <= vwc_threshold) or tensiometer rate-of-change stalls (dψ/dt ~ 0).
+    
+    This naturally captures both premature contact loss at intermediate suctions (-200 to -400 kPa)
+    and datalogger/ceramic saturation ceilings (-750 to -850 kPa) under a single physical framework.
+    
+    Parameters:
+    -----------
+    mp_series : pd.Series
+        Matric potential time-series in kPa (typically negative).
+    vwc_series : pd.Series, optional
+        Volumetric water content series (0.0 to 1.0 or 0 to 100%).
+    decoupling_threshold_kpa : float
+        Suction threshold where hydraulic contact loss can initiate (default -200 kPa).
+    vwc_threshold : float
+        Volumetric water content below which soil matrix contact breaks (default 0.08 m³/m³).
+        
+    Returns:
+    --------
+    flags_decoupled : pd.Series (bool)
+        True where physical hydraulic decoupling / contact loss is detected.
+    """
+    flags_decoupled = pd.Series(False, index=mp_series.index)
+    mp_clean = mp_series.dropna()
+    
+    if mp_clean.empty:
+        return flags_decoupled
+        
+    # 1. High suction condition
+    high_suction = (mp_series <= decoupling_threshold_kpa)
+    
+    # 2. Dynamic decoupling signature
+    if vwc_series is not None:
+        vwc_norm = vwc_series if vwc_series.max() <= 1.0 else vwc_series / 100.0
+        
+        # Check if tensiometer has plateaued/stalled
+        if isinstance(mp_series.index, pd.DatetimeIndex):
+            rolling_mp_std = mp_series.rolling('6h', min_periods=6).std()
+        else:
+            rolling_mp_std = mp_series.rolling(window=min(len(mp_series), 6), min_periods=1).std()
+            
+        mp_stalled = (rolling_mp_std < 5.0).fillna(False)
+        vwc_dry = (vwc_norm <= vwc_threshold)
+        
+        flags_decoupled = high_suction & (mp_stalled | vwc_dry)
+    else:
+        flags_decoupled = high_suction
+        
+    return flags_decoupled
+
